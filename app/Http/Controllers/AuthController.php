@@ -2,107 +2,119 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Http\JsonResponse;
+use App\Models\User;
+
 
 class AuthController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-    }
+   
 
     //////////////////////////////////////////////////////////**
-    //////////////* Register a new user in database.
-    /////////////////*/
-    public function register(Request $request)
+    /////////////////* Register a new user in database.
+    ////////////////////*/
+      public function register(Request $request): JsonResponse
     {
-
-    $validate = $request->validate([
-    "name" => "required|min:3",
-    "email" => "required|email",
-    "password" => "required|min:6"
-    ]);
-
-      
-        $user = User::create([
-            'name' => $validate['name'],
-            'email' => $validate['email'],
-            'password' => Hash::make($validate['password']),
+        $validated = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'email' => ['required', 'email', 'unique:users,email'],
+            'password' => ['required', 'min:8', 'confirmed'],
         ]);
 
+        $user = User::create([
+            'name' => $validated['name'],
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
+        ]);
+
+        $token = $user->createToken('auth-token')->plainTextToken;
+
         return response()->json([
+            'success' => true,
             'message' => 'User registered successfully',
-            'user' => $user,
+            'data' => [
+                'user' => $user,
+                'token' => $token,
+            ],
         ], 201);
     }
+  
 
-    ///////////////////////////////////////////////////**
-    ///////////////// * Login user.
-    //////////////////// */
-   public function login(Request $request)
-{
-    $validated = $request->validate([
-        'email' => 'required|email',
-        'password' => 'required|min:6',
-    ]);
+    
+    ////////////////////////////////////////////////////////**
+    /////////////////////// * Login user.
+    ////////////////////////// */
+    public function login(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
 
-    $user = User::where('email', $validated['email'])->first();
+        $user = User::where('email', $validated['email'])->first();
 
-    if (!$user || !Hash::check($validated['password'], $user->password)) {
+        if (! $user || ! Hash::check($validated['password'], $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Invalid credentials',
+            ], 401);
+        }
+
+        $token = $user->createToken('auth-token')->plainTextToken;
+
         return response()->json([
-            'success' => false,
-            'message' => 'Invalid email or password',
-        ], 401);
+            'success' => true,
+            'message' => 'Login successful',
+            'data' => [
+                'user' => $user,
+                'token' => $token,
+            ],
+        ]);
     }
+
+
+    
+    ////////////////////////////////////////////////////////**
+    /////////////////////// * Logout user.
+    ////////////////////////// */
+    public function logout(): JsonResponse
+    {
+    request()->user()->currentAccessToken()->delete();
 
     return response()->json([
         'success' => true,
-        'message' => 'Login successful',
-        'user' => $user,
-    ], 200);
+        'message' => 'Logged out successfully'
+    ]);
 }
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
+
+    ////////////////////////////////////////////////////////**
+    /////////////////////// * Get User profile.
+    ////////////////////////// */
+    public function show(Request $request): JsonResponse
     {
-        //
+        $user = $request->user();
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'created_at' => $user->created_at,
+            ]
+        ]);
     }
 }
+
+    
+
+   
+
+
+
+

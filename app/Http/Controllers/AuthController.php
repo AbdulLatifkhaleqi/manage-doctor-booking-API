@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Storage;
 use App\Models\User;
 
 
@@ -20,7 +21,7 @@ class AuthController extends Controller
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'email', 'unique:users,email'],
-            'password' => ['required', 'min:8', 'confirmed'],
+            'password' => ['required', 'min:6'],
         ]);
 
         $user = User::create([
@@ -86,8 +87,10 @@ class AuthController extends Controller
     return response()->json([
         'success' => true,
         'message' => 'Logged out successfully'
-    ]);
+    ],200);
 }
+
+
 
 
 
@@ -95,18 +98,56 @@ class AuthController extends Controller
     ////////////////////////////////////////////////////////**
     /////////////////////// * Get User profile.
     ////////////////////////// */
-    public function show(Request $request): JsonResponse
+    public function profile(Request $request)
+    {
+        return response()->json([
+            'success' => true,
+            'data' => $request->user()
+        ]);
+    }
+
+
+
+    ////////////////////////////////////////////////////////**
+    /////////////////////// * update User profile.
+    ////////////////////////// */
+       public function updateProfile(Request $request)
     {
         $user = $request->user();
 
+        $validated = $request->validate([
+            'name' => ['sometimes', 'string', 'min:2', 'max:255'],
+            'email' => ['sometimes', 'email', 'unique:users,email,' . $user->id],
+
+            'photo' => [
+                'nullable',
+                'image',
+                'mimes:jpg,jpeg,png,webp',
+                'max:2048'
+            ],
+
+            'phone' => ['nullable', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:500'],
+            'gender' => ['nullable', 'in:male,female,other'],
+            'dob' => ['nullable', 'date'],
+        ]);
+
+     if ($request->hasFile('photo')) {
+
+    if ($user->photo && Storage::disk('public')->exists($user->photo)) {
+        Storage::disk('public')->delete($user->photo);
+    }
+
+    $validated['photo'] = $request
+        ->file('photo')
+        ->store('users', 'public');
+}
+        $user->update($validated);
+
         return response()->json([
             'success' => true,
-            'data' => [
-                'id' => $user->id,
-                'name' => $user->name,
-                'email' => $user->email,
-                'created_at' => $user->created_at,
-            ]
+            'message' => 'Profile updated successfully',
+            'data' => $user->fresh()
         ]);
     }
 }

@@ -12,22 +12,23 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            //
-            if(!Schema::hasColumn("users" , "photo")){
-                $table->string("photo")->nullable();
-            }
-        });
-    }
+                $table->string("phone")->nullable();
+                $table->string("address")->nullable();
+                $table->string("gender")->nullable();
+                $table->date("dob")->nullable();
 
-     public function down(): void
-    {
-        Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('photo');
+
+            //
         });
     }
 
     /**
      * Reverse the migrations.
      */
-   
+    public function down(): void
+    {
+        Schema::table('users', function (Blueprint $table) {
+            //
+        });
+    }
 };

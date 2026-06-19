@@ -18,4 +18,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 ///////////////////////////////////////////////////////
 ////////////////////// doctors routes
-Route::post('/doctor/create' ,[DoctorController:: class, 'create']);
+Route::post('/doctors/create' ,[DoctorController:: class, 'create']);
+Route::get('/doctors' , [DoctorController::class ,'doctors']);
+
+Route::delete('/doctors/{id}', [DoctorController::class, 'destroy']);
+Route::put('/doctors/{id}', [DoctorController::class, 'update']);

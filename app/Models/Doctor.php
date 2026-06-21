@@ -15,6 +15,11 @@ class Doctor extends Model
         "image",
         "experience",
         "fees",
-        "about"
+        "about",
+        "slots_booked"
     ];
+
+    protected $casts = [
+    'slots_booked' => 'array',
+];
 }

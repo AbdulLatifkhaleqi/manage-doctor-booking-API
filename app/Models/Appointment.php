@@ -16,4 +16,14 @@ class Appointment extends Model
         'payment',
         'isCompleted',
     ];
+
+    public function user()
+{
+    return $this->belongsTo(User::class, 'userId');
+}
+
+public function doctor()
+{
+    return $this->belongsTo(Doctor::class, 'docId');
+}
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AppointmentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DoctorController;
@@ -23,3 +24,14 @@ Route::get('/doctors' , [DoctorController::class ,'doctors']);
 
 Route::delete('/doctors/{id}', [DoctorController::class, 'destroy']);
 Route::put('/doctors/{id}', [DoctorController::class, 'update']);
+
+///////////////////////////////////////////////////////
+////////////////////// doctors routes
+Route::post('/appointment/book', [AppointmentController::class, 'appointmentBook'])
+    ->middleware('auth:sanctum');
+    
+Route::get('/appointments', [AppointmentController::class, 'getUserAppointments'])
+    ->middleware('auth:sanctum');
+
+Route::get('/appointment/cancelAppoint/{id}', [AppointmentController::class, 'cancelAppointment'])
+    ->middleware('auth:sanctum');

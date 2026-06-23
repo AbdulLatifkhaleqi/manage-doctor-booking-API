@@ -1,9 +1,11 @@
 <?php
 
+use App\Http\Controllers\AdminController;
 use App\Http\Controllers\AppointmentController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DoctorController;
+use App\Http\Middleware\AdminAuth;
 
 ///////////////////////////////////////////////////////
 ////////////////////// Auth routes
@@ -35,3 +37,9 @@ Route::get('/appointments', [AppointmentController::class, 'getUserAppointments'
 
 Route::get('/appointment/cancelAppoint/{id}', [AppointmentController::class, 'cancelAppointment'])
     ->middleware('auth:sanctum');
+
+Route::get('/admin/appointments', [AppointmentController::class, 'Appointments']);
+
+
+Route::post('/admin/login', [AdminController::class, 'login'])
+    ->middleware(AdminAuth::class);

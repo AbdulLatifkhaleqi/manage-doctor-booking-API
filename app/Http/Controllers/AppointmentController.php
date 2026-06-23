@@ -112,6 +112,34 @@ public function getUserAppointments(Request $request)
     }
 }
 
+
+
+public function Appointments(){
+   
+  try {
+      
+
+          $appointments = Appointment::with([
+            'user:id,name,email,image,dob',
+            'doctor:id,name,email,image,experience,fees,about'
+        ])
+        ->latest()
+        ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $appointments
+        ], 200);
+
+    } catch (\Exception $err) {
+        return response()->json([
+            'success' => false,
+            'msg' => 'Failed to fetch appointments',
+            'error' => $err->getMessage()
+        ], 500);
+    }
+}
+
   
 ////////////////////////////////////////////////////////**
 /////////////////////// * cancel  appointment.
